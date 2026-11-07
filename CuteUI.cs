@@ -570,9 +570,17 @@ public static class DrawIcons
                 }
                 break;
             case "folder":
-                using (var path = UiUtil.RoundedPath(new Rectangle(3, 8, 18, 11), 3))
-                    g.DrawPath(pen, path);
-                g.DrawLines(pen, new PointF[] { new(6.5f, 8), new(6.5f, 5.5f), new(10.5f, 5.5f), new(12.5f, 8) });
+                using (var folderPen = new Pen(color, 1.6f)
+                {
+                    StartCap = LineCap.Round,
+                    EndCap = LineCap.Round,
+                    LineJoin = LineJoin.Round
+                })
+                {
+                    using (var path = UiUtil.RoundedPath(new Rectangle(3, 8, 18, 11), 3))
+                        g.DrawPath(folderPen, path);
+                    g.DrawLines(folderPen, new PointF[] { new(6.5f, 8), new(6.5f, 5.5f), new(10.5f, 5.5f), new(12.5f, 8) });
+                }
                 break;
             case "link":
                 // 标准链条字形（Segoe UI Symbol 的 🔗），旋转 -45° 朝右上

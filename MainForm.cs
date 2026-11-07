@@ -362,7 +362,7 @@ public class MainForm : Form
 
         var tileSrc = new PictureBox
         {
-            Image = DrawIcons.FolderTile(34, Color.FromArgb(0xE8, 0xF0, 0xFE), Blue),
+            Image = DrawIcons.Make("folder", Blue, 34),
             Left = 22, Top = 20, Width = 34, Height = 34,
             SizeMode = PictureBoxSizeMode.CenterImage
         };
@@ -384,7 +384,7 @@ public class MainForm : Form
 
         var tileDst = new PictureBox
         {
-            Image = DrawIcons.FolderTile(34, Color.FromArgb(0xE7, 0xF8, 0xF0), Color.FromArgb(0x34, 0xB3, 0x7E)),
+            Image = DrawIcons.Make("folder", Color.FromArgb(0x34, 0xB3, 0x7E), 34),
             Left = 22, Top = 130, Width = 34, Height = 34,
             SizeMode = PictureBoxSizeMode.CenterImage
         };
