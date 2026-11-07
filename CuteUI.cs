@@ -184,13 +184,13 @@ public class GradientButton : TranslucentControl
         int x0 = (Width - total) / 2;
         int cy = Height / 2;
 
-        // 斜 45° 的白色链条图标：两个互扣的圆角环
+        // 白色链条图标：两个互扣的胶囊形圆环，朝右上倾斜 45°
         var state = g.Save();
         g.TranslateTransform(x0 + iconSize / 2f, cy);
-        g.RotateTransform(45f);
-        using (var linkPen = new Pen(textColor, 2f) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
-        using (var ring1 = UiUtil.RoundedPath(new Rectangle(-10, -4, 11, 8), 4))
-        using (var ring2 = UiUtil.RoundedPath(new Rectangle(-1, -4, 11, 8), 4))
+        g.RotateTransform(-45f);
+        using (var linkPen = new Pen(textColor, 2.3f) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
+        using (var ring1 = UiUtil.RoundedPath(new Rectangle(-10, -3, 12, 7), 3))
+        using (var ring2 = UiUtil.RoundedPath(new Rectangle(-2, -3, 12, 7), 3))
         {
             g.DrawPath(linkPen, ring1);
             g.DrawPath(linkPen, ring2);
