@@ -2,17 +2,45 @@
 
 把 C 盘的软件缓存安全迁移到其他盘的可视化工具。原理是 Windows **目录联接（Junction）**：软件以为缓存还在 C 盘原位置，实际数据存在其他盘。**全程不需要管理员权限**。
 
-界面为「C 盘腾腾酱」风格：圆角无边框窗口，动漫少女壁纸作为窗口背景，左侧磨砂半透明导航栏（首页 / 历史记录 / 设置）+ 白色圆角卡片 + 渐变大按钮 + 吉祥物。窗口可用鼠标在任意空白处拖动，右上角为自定义的最小化 / 关闭按钮。所有图标、吉祥物均为程序运行时用 GDI+ 绘制；界面代码在 `CuteUI.cs`（自定义控件库，控件背景真正透明）和 `MainForm.cs`（布局与窗口逻辑）。
+## 界面预览
+
+**首页** —— 选择要转移的文件夹和目标位置，程序自动做安全检查：
+
+![首页](docs/shot-home.png)
+
+**历史记录** —— 每次迁移的时间、原路径、目标位置、大小，以及运行日志：
+
+![历史记录](docs/shot-history.png)
+
+**设置** —— 工作原理说明与安全提示：
+
+![设置](docs/shot-settings.png)
+
+## 特点
+
+- **免安装**：单个 exe，双击即用，无需 .NET 运行时和管理员权限
+- **常用缓存预设**：内置微信 / QQ / Chrome / Edge / npm / pip / HuggingFace / Docker 等 14 个常见缓存位置，一键填入
+- **安全迁移**：复制 → 校验 → 保留 `.bak` 备份 → 创建联接，任何一步失败自动回滚；确认软件正常后再删备份释放空间
+- **防呆检查**：系统目录、程序目录、AppData 总目录等直接禁止迁移；目标盘空间不足、路径嵌套、文件被占用都会提前拦截
+- **迁移记录**：本地保留完整迁移历史，方便日后排查
+
+## 下载使用
+
+到 [**Releases**](https://github.com/Koda987/CacheMover/releases) 页面下载 `CacheMover-vX.X.X-win-x64.exe`，双击直接运行（Windows 10/11，无需安装任何依赖）。
+
+自己从源码编译：`dotnet build -c Release` 后，exe 位于 `bin\Release\net8.0-windows\win-x64\publish\`。
+
+## 界面说明
+
+圆角无边框窗口，动漫少女壁纸作为窗口背景，左侧磨砂半透明导航栏 + 白色圆角卡片 + 渐变大按钮 + 吉祥物。窗口可用鼠标在任意空白处拖动，右上角为自定义的最小化 / 关闭按钮。所有图标、吉祥物均为程序运行时用 GDI+ 绘制；界面代码在 `CuteUI.cs`（自定义控件库，控件背景真正透明）和 `MainForm.cs`（布局与窗口逻辑）。
 
 > **关于图片素材**：壁纸、吉祥物、应用图标等美术素材不入版本库（见 `.gitignore`）。仓库克隆后可直接编译——素材缺失时程序自动回退到渐变背景与手绘吉祥物；将图片放入 `assets\`（`bg.jpg`、`mascot.png`、`app.ico`）后重新编译即可启用完整皮肤。
 
-## 程序在哪
+## 重新发布
 
-免安装版（拷到任何 Windows 10/11 电脑都能直接双击运行）：
+修改代码后执行 `dotnet publish -c Release`，产物在 `bin\Release\net8.0-windows\win-x64\publish\CacheMover.exe`（约 65 MB，单文件、自包含）。
 
-```
-bin\Release\net8.0-windows\win-x64\publish\CacheMover.exe   （约 64 MB，单文件）
-```
+另有一个隐藏功能：`CacheMover.exe --screenshot <输出目录>` 会自动渲染三个页面为 PNG（历史记录与数据位置显示示例数据），用于更新 README 截图。
 
 ## 怎么用
 
@@ -30,15 +58,6 @@ bin\Release\net8.0-windows\win-x64\publish\CacheMover.exe   （约 64 MB，单�
 - **警告级（确认后放行）**：`AppData\Local\Microsoft` 其他子目录、OneDrive 云同步目录、临时目录、非 NTFS 目标分区、同分区迁移等。
 - **其他检查**：源和目标不能互相嵌套（防止联接指向自己造成死循环）、目标盘剩余空间是否够、目标文件夹必须为空、抽查文件是否被占用。
 - **迁移记录**：每次成功迁移追加写入 `%APPDATA%\CacheMover\history.jsonl`，记录原路径、目标路径、备份位置，便于以后排查。
-
-## 重新发布
-
-修改代码后执行：
-
-```
-cd F:\RJHC\kf\CacheMover
-dotnet publish -c Release
-```
 
 ## 注意事项
 

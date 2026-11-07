@@ -64,8 +64,17 @@ public class MainForm : Form
     [DllImport("user32.dll")]
     private static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
 
-    public MainForm()
+    private static bool _screenshotMode;
+    private static string _shotDir = ".";
+
+    public MainForm(string[]? screenshotArgs = null)
     {
+        if (screenshotArgs is { Length: >= 1 } && screenshotArgs[0] == "--screenshot")
+        {
+            _screenshotMode = true;
+            _shotDir = screenshotArgs.Length >= 2 ? screenshotArgs[1] : ".";
+        }
+
         Text = "C 盘腾腾酱 · 缓存搬家 CacheMover";
         Font = new Font("Microsoft YaHei UI", 9F);
         AutoScaleMode = AutoScaleMode.Font;
@@ -119,6 +128,48 @@ public class MainForm : Form
         ShowPage(0);
         RenderResults();
         UpdateButtons();
+
+        if (_screenshotMode)
+            Shown += async (_, _) => await RunScreenshotSequenceAsync();
+    }
+
+    // ================= 截图模式（--screenshot） =================
+
+    private async Task RunScreenshotSequenceAsync()
+    {
+        try
+        {
+            string Shot(string name)
+            {
+                // 隐藏不透明 TextBox，让 OnPaint 里的占位文字出现在截图中
+                bool v1 = _inpSrc.Box.Visible, v2 = _inpDst.Box.Visible;
+                _inpSrc.Box.Visible = _inpDst.Box.Visible = false;
+                using var bmp = new Bitmap(Width, Height);
+                DrawToBitmap(bmp, new Rectangle(0, 0, Width, Height));
+                _inpSrc.Box.Visible = v1;
+                _inpDst.Box.Visible = v2;
+                var path = Path.Combine(_shotDir, name);
+                bmp.Save(path, System.Drawing.Imaging.ImageFormat.Png);
+                return path;
+            }
+
+            await Task.Delay(500);
+            ActiveControl = null; // 让输入框失焦，占位文字完整显示
+            Shot("shot-home.png");
+            ShowPage(1);
+            await Task.Delay(500);
+            Shot("shot-history.png");
+            ShowPage(2);
+            await Task.Delay(500);
+            Shot("shot-settings.png");
+            ShowPage(0);
+            Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("截图生成失败：" + ex.Message, Text);
+            Close();
+        }
     }
 
     // ================= 背景与窗口 =================
@@ -548,12 +599,15 @@ public class MainForm : Form
             FillColor = Color.FromArgb(0xFA, 0xFB, 0xFF),
             BorderColor = Color.FromArgb(0xE9, 0xED, 0xF7)
         };
+        var dfShown = _screenshotMode
+            ? "%APPDATA%\\CacheMover\\history.jsonl（迁移记录）"
+            : DataFolder + "\\history.jsonl（迁移记录）";
         var aboutText = new Label
         {
             Text = "缓存搬家 CacheMover  v1.2.0\r\n\r\n" +
                    "原理：创建目录联接（Junction），把 C 盘文件夹映射到其他盘。\r\n" +
                    "软件以为缓存还在 C 盘，实际数据在其他盘。全程无需管理员权限。\r\n\r\n" +
-                   $"数据位置：{DataFolder}\\history.jsonl（迁移记录）",
+                   $"数据位置：{dfShown}",
             Left = 20, Top = 18, Width = 484, Height = 120,
             ForeColor = TextBody,
             Font = new Font("Microsoft YaHei UI", 9F)
@@ -934,6 +988,13 @@ public class MainForm : Form
     private void LoadHistory()
     {
         _grid.Rows.Clear();
+        // 截图模式展示示例数据，不读取真实迁移记录
+        if (_screenshotMode)
+        {
+            _grid.Rows.Add("2026-07-01 10:00:00", "C:\\Users\\示例用户\\AppData\\Local\\示例软件\\Cache", "D:\\CacheLink\\Cache", Util.FmtBytes(5368709120));
+            _grid.Rows.Add("2026-07-15 18:30:00", "C:\\Users\\示例用户\\AppData\\Roaming\\另一软件\\Temp", "D:\\CacheLink\\Temp", Util.FmtBytes(1073741824));
+            return;
+        }
         try
         {
             var file = Path.Combine(DataFolder, "history.jsonl");
