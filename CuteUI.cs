@@ -184,18 +184,9 @@ public class GradientButton : TranslucentControl
         int x0 = (Width - total) / 2;
         int cy = Height / 2;
 
-        // 白色链条图标：两个互扣的胶囊形圆环，朝右上倾斜 45°
-        var state = g.Save();
-        g.TranslateTransform(x0 + iconSize / 2f, cy);
-        g.RotateTransform(-45f);
-        using (var linkPen = new Pen(textColor, 2.3f) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
-        using (var ring1 = UiUtil.RoundedPath(new Rectangle(-10, -3, 12, 7), 3))
-        using (var ring2 = UiUtil.RoundedPath(new Rectangle(-2, -3, 12, 7), 3))
-        {
-            g.DrawPath(linkPen, ring1);
-            g.DrawPath(linkPen, ring2);
-        }
-        g.Restore(state);
+        // 白色链条图标（与吉祥物徽章同一套链节造型）
+        using (var linkIcon = DrawIcons.Make("link", textColor, 22))
+            g.DrawImage(linkIcon, x0 - 2, cy - 11);
         TextRenderer.DrawText(g, Text, Font, new Point(x0 + iconSize + gap, (Height - Font.Height) / 2), textColor);
     }
 }
@@ -580,8 +571,22 @@ public static class DrawIcons
                 g.DrawLines(pen, new PointF[] { new(6.5f, 8), new(6.5f, 5.5f), new(10.5f, 5.5f), new(12.5f, 8) });
                 break;
             case "link":
-                g.DrawEllipse(pen, 3, 8.5f, 9, 9);
-                g.DrawEllipse(pen, 11, 8.5f, 9, 9);
+                // 链条：两个互扣的开口圆环，整体沿 "/" 方向倾斜 45°
+                {
+                    var linkState = g.Save();
+                    g.TranslateTransform(12, 12);
+                    g.RotateTransform(-45);
+                    using var linkPen = new Pen(color, 2.0f)
+                    {
+                        StartCap = LineCap.Round,
+                        EndCap = LineCap.Round,
+                        LineJoin = LineJoin.Round
+                    };
+                    const float lr = 4.6f, ldx = 3.4f, lgap = 70f;
+                    g.DrawArc(linkPen, -ldx - lr, -lr, lr * 2, lr * 2, lgap / 2, 360 - lgap);
+                    g.DrawArc(linkPen, ldx - lr, -lr, lr * 2, lr * 2, 180 + lgap / 2, 360 - lgap);
+                    g.Restore(linkState);
+                }
                 break;
             case "close":
                 g.DrawLines(pen, new PointF[] { new(6.5f, 6.5f), new(17.5f, 17.5f) });
