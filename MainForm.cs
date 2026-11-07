@@ -153,7 +153,18 @@ public class MainForm : Form
         g.Clear(Color.FromArgb(0xF2, 0xF5, 0xFC));
         float scale = (float)Height / _bg.Height;
         int w = (int)(_bg.Width * scale + 0.5f);
-        g.DrawImage(_bg, Width - w + 120, 0, w, Height);
+        int x = Width - w + 120;
+        g.DrawImage(_bg, x, 0, w, Height);
+        if (x > 0)
+        {
+            // 左侧镜面扩图：把原图最左边的内容水平镜像填到左边缘，接缝处与主图完全连续
+            var state = g.Save();
+            g.TranslateTransform(x, 0);
+            g.ScaleTransform(-1, 1);
+            g.DrawImage(_bg, new Rectangle(0, 0, x, Height),
+                new Rectangle(0, 0, (int)(x / scale) + 1, _bg.Height), GraphicsUnit.Pixel);
+            g.Restore(state);
+        }
         // 一层很淡的白纱，保证文字可读
         using var veil = new SolidBrush(Color.FromArgb(30, Color.White));
         g.FillRectangle(veil, ClientRectangle);
