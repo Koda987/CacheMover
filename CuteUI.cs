@@ -571,20 +571,22 @@ public static class DrawIcons
                 g.DrawLines(pen, new PointF[] { new(6.5f, 8), new(6.5f, 5.5f), new(10.5f, 5.5f), new(12.5f, 8) });
                 break;
             case "link":
-                // 链条：两个互扣的开口圆环，整体沿 "/" 方向倾斜 45°
+                // 标准链条字形（Segoe UI Symbol 的 🔗），旋转 -45° 朝右上
                 {
+                    g.ResetTransform();
+                    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
                     var linkState = g.Save();
-                    g.TranslateTransform(12, 12);
+                    g.TranslateTransform(size / 2f, size / 2f);
                     g.RotateTransform(-45);
-                    using var linkPen = new Pen(color, 2.0f)
+                    using var linkFont = new Font("Segoe UI Symbol", size * 0.82f, FontStyle.Regular, GraphicsUnit.Pixel);
+                    using var linkFormat = new StringFormat
                     {
-                        StartCap = LineCap.Round,
-                        EndCap = LineCap.Round,
-                        LineJoin = LineJoin.Round
+                        Alignment = StringAlignment.Center,
+                        LineAlignment = StringAlignment.Center
                     };
-                    const float lr = 4.6f, ldx = 3.4f, lgap = 70f;
-                    g.DrawArc(linkPen, -ldx - lr, -lr, lr * 2, lr * 2, lgap / 2, 360 - lgap);
-                    g.DrawArc(linkPen, ldx - lr, -lr, lr * 2, lr * 2, 180 + lgap / 2, 360 - lgap);
+                    using var linkBrush = new SolidBrush(color);
+                    g.DrawString("\uD83D\uDD17", linkFont, linkBrush,
+                        new RectangleF(-size, -size, size * 2, size * 2), linkFormat);
                     g.Restore(linkState);
                 }
                 break;
