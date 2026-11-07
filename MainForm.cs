@@ -113,6 +113,8 @@ public class MainForm : Form
 
         ApplyTransparentLabels(this);
         EnableDragRecursively(this);
+        // 窗体自身背景（右侧立绘露出的区域）也要能拖动
+        MouseDown += (_, e) => StartDrag(e);
         ShowPage(0);
         RenderResults();
         UpdateButtons();
@@ -171,6 +173,15 @@ public class MainForm : Form
         Region = new Region(UiUtil.RoundedPath(new Rectangle(0, 0, Width, Height), 22));
     }
 
+    private void StartDrag(MouseEventArgs e)
+    {
+        if (e.Button == MouseButtons.Left)
+        {
+            ReleaseCapture();
+            _ = SendMessage(Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+        }
+    }
+
     private void EnableDragRecursively(Control root)
     {
         foreach (Control c in root.Controls)
@@ -178,14 +189,7 @@ public class MainForm : Form
             if (c is InputField or ListBox or DataGridView or TextBox
                 or GradientButton or GhostButton or IconButton or NavButton)
                 continue;
-            c.MouseDown += (_, e) =>
-            {
-                if (e.Button == MouseButtons.Left)
-                {
-                    ReleaseCapture();
-                    _ = SendMessage(Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0);
-                }
-            };
+            c.MouseDown += (_, e) => StartDrag(e);
             EnableDragRecursively(c);
         }
     }
