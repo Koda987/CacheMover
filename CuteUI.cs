@@ -348,8 +348,18 @@ public class SpeechBubble : TranslucentControl
 
     private GraphicsPath BubblePath()
     {
-        var path = UiUtil.RoundedPath(new Rectangle(0, 0, Width - 1, Height - 15), 14);
-        path.AddPolygon(new PointF[] { new(18, Height - 16), new(40, Height - 16), new(14, Height - 1) });
+        // 单一图形：圆角矩形 + 左下角小尾巴连成一体，描边没有接缝
+        const int r = 14;
+        int w = Width - 1, h = Height - 16; // h 为气泡主体底边，尾巴向下伸出
+        var path = new GraphicsPath();
+        path.AddArc(0, 0, r * 2, r * 2, 180, 90);          // 左上
+        path.AddArc(w - r * 2, 0, r * 2, r * 2, 270, 90);  // 右上
+        path.AddArc(w - r * 2, h - r * 2, r * 2, r * 2, 0, 90); // 右下
+        path.AddLine(w - r, h, 52, h);                     // 底边到尾巴右根
+        path.AddLine(52, h, 32, Height - 1);               // 尾巴尖
+        path.AddLine(32, Height - 1, 28, h);               // 尾巴左根
+        path.AddArc(0, h - r * 2, r * 2, r * 2, 90, 90);   // 左下
+        path.CloseFigure();
         return path;
     }
 
@@ -543,25 +553,29 @@ public static class DrawIcons
                 g.DrawLines(pen, new PointF[] { new(12, 7.5f), new(12, 12.5f), new(15.5f, 14.5f) });
                 break;
             case "gear":
-                // 实心圆润小齿轮：6 颗胖齿 + 中心圆盘，再把中心孔擦除
+                // 经典齿轮：8 个梯形齿 + 圆盘，中心孔用 SourceCopy 擦除
                 using (var gearPath = new GraphicsPath())
                 using (var gearBrush = new SolidBrush(color))
                 {
-                    gearPath.AddEllipse(5.8f, 5.8f, 12.4f, 12.4f);
-                    for (int i = 0; i < 6; i++)
+                    const float cx = 12, cy = 12, rRoot = 7.4f, rTip = 10.3f;
+                    var pts = new List<PointF>();
+                    for (int i = 0; i < 8; i++)
                     {
-                        double a = i * Math.PI / 3;
-                        float cx = 12 + (float)Math.Cos(a) * 7.4f;
-                        float cy = 12 + (float)Math.Sin(a) * 7.4f;
-                        gearPath.AddEllipse(cx - 2.7f, cy - 2.7f, 5.4f, 5.4f);
+                        double a = i * Math.PI / 4;
+                        PointF P(double ang, float r) => new(cx + (float)Math.Cos(ang) * r, cy + (float)Math.Sin(ang) * r);
+                        pts.Add(P(a - 0.36, rRoot));  // 齿根左
+                        pts.Add(P(a - 0.19, rTip));   // 齿尖左
+                        pts.Add(P(a + 0.19, rTip));   // 齿尖右
+                        pts.Add(P(a + 0.36, rRoot));  // 齿根右
                     }
+                    gearPath.AddPolygon(pts.ToArray());
                     g.FillPath(gearBrush, gearPath);
                 }
                 {
                     var oldMode = g.CompositingMode;
                     g.CompositingMode = CompositingMode.SourceCopy;
                     using var erase = new SolidBrush(Color.Transparent);
-                    g.FillEllipse(erase, 9.3f, 9.3f, 5.4f, 5.4f);
+                    g.FillEllipse(erase, 9.2f, 9.2f, 5.6f, 5.6f);
                     g.CompositingMode = oldMode;
                 }
                 break;
