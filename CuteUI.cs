@@ -339,40 +339,23 @@ public class CuteProgressBar : TranslucentControl
     }
 }
 
-/// <summary>带小尾巴的对话气泡。</summary>
+/// <summary>磨砂对话气泡：半透明白底、极浅描边、文字靠左，无尾巴。</summary>
 public class SpeechBubble : TranslucentControl
 {
     public string Message { get; set; } = "";
 
-    public SpeechBubble() => Font = new Font("Microsoft YaHei UI", 8.75F);
-
-    private GraphicsPath BubblePath()
-    {
-        // 单一图形：圆角矩形 + 左下角小尾巴连成一体，描边没有接缝
-        const int r = 14;
-        int w = Width - 1, h = Height - 16; // h 为气泡主体底边，尾巴向下伸出
-        var path = new GraphicsPath();
-        path.AddArc(0, 0, r * 2, r * 2, 180, 90);          // 左上
-        path.AddArc(w - r * 2, 0, r * 2, r * 2, 270, 90);  // 右上
-        path.AddArc(w - r * 2, h - r * 2, r * 2, r * 2, 0, 90); // 右下
-        path.AddLine(w - r, h, 52, h);                     // 底边到尾巴右根
-        path.AddLine(52, h, 32, Height - 1);               // 尾巴尖
-        path.AddLine(32, Height - 1, 28, h);               // 尾巴左根
-        path.AddArc(0, h - r * 2, r * 2, r * 2, 90, 90);   // 左下
-        path.CloseFigure();
-        return path;
-    }
+    public SpeechBubble() => Font = new Font("Microsoft YaHei UI", 9F);
 
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        using var path = BubblePath();
-        using (var b = new SolidBrush(Color.White)) g.FillPath(b, path);
-        using (var p = new Pen(Color.FromArgb(0xDC, 0xE6, 0xF6))) g.DrawPath(p, path);
-        var rect = new Rectangle(10, 6, Width - 20, Height - 26);
-        TextRenderer.DrawText(g, Message, Font, rect, Color.FromArgb(0x7C, 0x8A, 0xA8),
-            TextFormatFlags.HorizontalCenter | TextFormatFlags.WordBreak | TextFormatFlags.VerticalCenter);
+        using var path = UiUtil.RoundedPath(new Rectangle(0, 0, Width - 1, Height - 1), 16);
+        using (var b = new SolidBrush(Color.FromArgb(150, 255, 255, 255))) g.FillPath(b, path);
+        using (var p = new Pen(Color.FromArgb(70, 0xC9, 0xDC, 0xF6))) g.DrawPath(p, path);
+        var rect = new Rectangle(16, 8, Width - 32, Height - 16);
+        TextRenderer.DrawText(g, Message, Font, rect, Color.FromArgb(0x8A, 0x97, 0xB5),
+            TextFormatFlags.Left | TextFormatFlags.WordBreak | TextFormatFlags.VerticalCenter);
     }
 }
 

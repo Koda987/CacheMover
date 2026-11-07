@@ -261,7 +261,7 @@ public class MainForm : Form
         _bubble = new SpeechBubble
         {
             Left = 14, Top = 570, Width = 204, Height = 92,
-            Message = "主人，C 盘空间还不够吗？\r\n我来帮你~"
+            Message = "主人，\r\nC 盘空间还不够吗？\r\n我来帮你~"
         };
         var cat = new MascotAvatar { Left = 74, Top = 668, Width = 70, Height = 70 };
 
