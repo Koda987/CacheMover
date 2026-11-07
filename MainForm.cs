@@ -149,11 +149,11 @@ public class MainForm : Form
             g.FillRectangle(brush, ClientRectangle);
             return;
         }
-        // 等比放大铺满、右对齐裁切：让少女始终显示在窗口右侧
-        float scale = Math.Max((float)Width / _bg.Width, (float)Height / _bg.Height);
+        // 高度铺满 + 整体右移：少女脸部完整露出在主卡片右侧，不被遮挡
+        g.Clear(Color.FromArgb(0xF2, 0xF5, 0xFC));
+        float scale = (float)Height / _bg.Height;
         int w = (int)(_bg.Width * scale + 0.5f);
-        int h = (int)(_bg.Height * scale + 0.5f);
-        g.DrawImage(_bg, Width - w, (Height - h) / 2, w, h);
+        g.DrawImage(_bg, Width - w + 120, 0, w, Height);
         // 一层很淡的白纱，保证文字可读
         using var veil = new SolidBrush(Color.FromArgb(30, Color.White));
         g.FillRectangle(veil, ClientRectangle);
