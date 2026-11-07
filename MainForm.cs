@@ -74,6 +74,7 @@ public class MainForm : Form
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.FromArgb(0xF2, 0xF5, 0xFC);
         DoubleBuffered = true;
+        try { Icon = Icon.ExtractAssociatedIcon(Environment.ProcessPath) ?? Icon; } catch { /* 任务栏图标兜底 */ }
 
         (_bg, _bgStream) = LoadBackground();
 

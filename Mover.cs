@@ -88,13 +88,12 @@ public static class Mover
             await Task.Run(() => CreateJunction(src, dst), ct);
             linked = true;
 
-            var di = new DirectoryInfo(src);
-            var linkTarget = di.LinkTarget;
-            if (linkTarget == null ||
-                !string.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(linkTarget)), dst, StringComparison.OrdinalIgnoreCase))
+            // 功能性校验联接：在目标放标记文件，经联接读回。部分磁盘/系统环境下
+            // LinkTarget 字符串带 Global 等前缀，字符串比对会误判，读通才是真可靠。
+            if (!await Task.Run(() => VerifyJunction(src, dst), ct))
             {
                 await RollbackAsync(src, bak, dst, CleanupDstAsync);
-                return new MoveResult(false, "联接指向校验失败，已还原原文件夹", null, 0, 0);
+                return new MoveResult(false, "联接指向校验失败（经联接无法读到目标数据），已还原原文件夹", null, 0, 0);
             }
 
             percent.Report(100);
@@ -232,6 +231,29 @@ public static class Mover
         var di = new DirectoryInfo(link);
         if (!di.Exists || (di.Attributes & FileAttributes.ReparsePoint) == 0)
             throw new IOException($"在 {link} 创建目录联接失败（目标：{target}）");
+    }
+
+    /// <summary>功能性校验联接：往目标写标记文件并经联接读回，读到才算联接真正可用。</summary>
+    private static bool VerifyJunction(string link, string target)
+    {
+        try
+        {
+            var marker = Path.Combine(target, ".cm_verify_" + Guid.NewGuid().ToString("N")[..8] + ".tmp");
+            File.WriteAllText(marker, "ok");
+            try
+            {
+                var readBack = File.ReadAllText(Path.Combine(link, Path.GetFileName(marker)));
+                return readBack == "ok";
+            }
+            finally
+            {
+                try { File.Delete(marker); } catch { /* 校验标记清理失败不影响结果 */ }
+            }
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static async Task TryRestoreAsync(string src, string bak)

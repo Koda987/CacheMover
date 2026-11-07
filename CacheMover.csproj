@@ -9,6 +9,7 @@
     <AssemblyName>CacheMover</AssemblyName>
     <RootNamespace>CacheMover</RootNamespace>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationIcon>assets\app.ico</ApplicationIcon>
     <Version>1.2.0</Version>
     <AssemblyTitle>缓存搬家 CacheMover</AssemblyTitle>
     <Product>缓存搬家 CacheMover</Product>
