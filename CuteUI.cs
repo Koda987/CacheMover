@@ -543,15 +543,26 @@ public static class DrawIcons
                 g.DrawLines(pen, new PointF[] { new(12, 7.5f), new(12, 12.5f), new(15.5f, 14.5f) });
                 break;
             case "gear":
-                g.DrawEllipse(pen, 7.5f, 7.5f, 9, 9);
-                g.DrawEllipse(pen, 10.2f, 10.2f, 3.6f, 3.6f);
-                for (int i = 0; i < 8; i++)
+                // 实心圆润小齿轮：6 颗胖齿 + 中心圆盘，再把中心孔擦除
+                using (var gearPath = new GraphicsPath())
+                using (var gearBrush = new SolidBrush(color))
                 {
-                    double a = i * Math.PI / 4;
-                    float c = 12, r1 = 7.4f, r2 = 10.4f;
-                    g.DrawLine(pen,
-                        c + (float)Math.Cos(a) * r1, c + (float)Math.Sin(a) * r1,
-                        c + (float)Math.Cos(a) * r2, c + (float)Math.Sin(a) * r2);
+                    gearPath.AddEllipse(5.8f, 5.8f, 12.4f, 12.4f);
+                    for (int i = 0; i < 6; i++)
+                    {
+                        double a = i * Math.PI / 3;
+                        float cx = 12 + (float)Math.Cos(a) * 7.4f;
+                        float cy = 12 + (float)Math.Sin(a) * 7.4f;
+                        gearPath.AddEllipse(cx - 2.7f, cy - 2.7f, 5.4f, 5.4f);
+                    }
+                    g.FillPath(gearBrush, gearPath);
+                }
+                {
+                    var oldMode = g.CompositingMode;
+                    g.CompositingMode = CompositingMode.SourceCopy;
+                    using var erase = new SolidBrush(Color.Transparent);
+                    g.FillEllipse(erase, 9.3f, 9.3f, 5.4f, 5.4f);
+                    g.CompositingMode = oldMode;
                 }
                 break;
             case "folder":
