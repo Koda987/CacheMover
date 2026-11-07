@@ -245,7 +245,7 @@ public class InputField : Panel
         BrowseButton = new IconButton
         {
             Size = new Size(32, 32),
-            IconImage = DrawIcons.Make("folder", Color.FromArgb(0x8A, 0x97, 0xB5), 18)
+            IconImage = DrawIcons.Make("folder", Color.FromArgb(0x8A, 0x97, 0xB5), 22)
         };
 
         _placeholder.ForeColor = Color.FromArgb(0xB9, 0xC2, 0xD8);
