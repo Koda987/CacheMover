@@ -158,33 +158,45 @@ public class GradientButton : TranslucentControl
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
         using var path = UiUtil.RoundedPath(new Rectangle(0, 0, Width - 1, Height - 1), 14);
+        Color top, bottom;
         if (!Enabled)
         {
-            using var b = new SolidBrush(Color.FromArgb(0xDD, 0xE3, 0xF0));
-            g.FillPath(b, path);
+            // 未就绪也保持蓝色系，只是浅一档
+            top = Color.FromArgb(0x9A, 0xBA, 0xF5);
+            bottom = Color.FromArgb(0xB3, 0xCC, 0xF9);
         }
         else if (_down)
         {
-            using var b = new SolidBrush(Color.FromArgb(0x44, 0x79, 0xDB));
-            g.FillPath(b, path);
+            top = bottom = Color.FromArgb(0x44, 0x79, 0xDB);
         }
         else
         {
-            var top = _hover ? Color.FromArgb(0x5D, 0x96, 0xF2) : Color.FromArgb(0x4F, 0x8B, 0xEF);
-            var bottom = _hover ? Color.FromArgb(0x8C, 0xBC, 0xFA) : Color.FromArgb(0x7F, 0xB0, 0xF7);
-            using var brush = new LinearGradientBrush(new Rectangle(0, 0, Width, Height), top, bottom, 90f);
-            g.FillPath(brush, path);
+            top = _hover ? Color.FromArgb(0x5D, 0x96, 0xF2) : Color.FromArgb(0x4F, 0x8B, 0xEF);
+            bottom = _hover ? Color.FromArgb(0x8C, 0xBC, 0xFA) : Color.FromArgb(0x7F, 0xB0, 0xF7);
         }
+        using (var brush = new LinearGradientBrush(new Rectangle(0, 0, Width, Height), top, bottom, 90f))
+            g.FillPath(brush, path);
 
-        var textColor = Enabled ? Color.White : Color.FromArgb(0x97, 0xA1, 0xB8);
+        var textColor = Color.White;
         var size = TextRenderer.MeasureText(Text, Font);
-        int total = 18 + 10 + size.Width;
+        const int iconSize = 18, gap = 8;
+        int total = iconSize + gap + size.Width;
         int x0 = (Width - total) / 2;
         int cy = Height / 2;
-        using var pen = new Pen(textColor, 2.2f);
-        g.DrawEllipse(pen, x0 - 11, cy - 6, 12, 12);
-        g.DrawEllipse(pen, x0 - 1, cy - 6, 12, 12);
-        TextRenderer.DrawText(g, Text, Font, new Point(x0 + 18, (Height - Font.Height) / 2), textColor);
+
+        // 斜 45° 的白色链条图标：两个互扣的圆角环
+        var state = g.Save();
+        g.TranslateTransform(x0 + iconSize / 2f, cy);
+        g.RotateTransform(45f);
+        using (var linkPen = new Pen(textColor, 2f) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
+        using (var ring1 = UiUtil.RoundedPath(new Rectangle(-10, -4, 11, 8), 4))
+        using (var ring2 = UiUtil.RoundedPath(new Rectangle(-1, -4, 11, 8), 4))
+        {
+            g.DrawPath(linkPen, ring1);
+            g.DrawPath(linkPen, ring2);
+        }
+        g.Restore(state);
+        TextRenderer.DrawText(g, Text, Font, new Point(x0 + iconSize + gap, (Height - Font.Height) / 2), textColor);
     }
 }
 
