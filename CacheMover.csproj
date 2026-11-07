@@ -24,7 +24,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="assets\bg.jpg" />
+    <!-- 「修改」目录是布局参考稿，不参与编译 -->
+    <Compile Remove="修改\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="assets\bg.png" />
+    <EmbeddedResource Include="assets\mascot.png" />
   </ItemGroup>
 
 </Project>

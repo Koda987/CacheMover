@@ -20,7 +20,7 @@ public class MainForm : Form
     private SpeechBubble _bubble = null!;
 
     // ---------- 首页 ----------
-    private CatAvatar _avatarHeader = null!;
+    private MascotAvatar _avatarHeader = null!;
     private Label _lblAppTitle = null!, _lblAppSub = null!, _lblSizeLine = null!, _lblStatus = null!, _lblBak = null!;
     private NoteLabel _note = null!;
     private RoundedPanel _pageHome = null!;
@@ -69,7 +69,7 @@ public class MainForm : Form
         Text = "C 盘腾腾酱 · 缓存搬家 CacheMover";
         Font = new Font("Microsoft YaHei UI", 9F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(1180, 800);
+        ClientSize = new Size(1160, 768);
         FormBorderStyle = FormBorderStyle.None;
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.FromArgb(0xF2, 0xF5, 0xFC);
@@ -124,12 +124,20 @@ public class MainForm : Form
     {
         try
         {
-            using var s = typeof(MainForm).Assembly.GetManifestResourceStream("CacheMover.assets.bg.jpg");
+            using var s = typeof(MainForm).Assembly.GetManifestResourceStream("CacheMover.assets.bg.png");
             if (s == null) return (null, null);
             var ms = new MemoryStream();
             s.CopyTo(ms);
             ms.Position = 0;
-            return (Image.FromStream(ms), ms);
+            var full = Image.FromStream(ms);
+            // 裁掉原图右侧约 9.5%（生成图右下角的水印区域）
+            int cropW = full.Width - (int)(full.Width * 0.095);
+            var bmp = new Bitmap(cropW, full.Height);
+            using (var g = Graphics.FromImage(bmp))
+                g.DrawImage(full, new Rectangle(0, 0, cropW, full.Height),
+                    new Rectangle(0, 0, cropW, full.Height), GraphicsUnit.Pixel);
+            full.Dispose();
+            return (bmp, ms);
         }
         catch
         {
@@ -147,13 +155,13 @@ public class MainForm : Form
             g.FillRectangle(brush, ClientRectangle);
             return;
         }
-        // 等比放大铺满、居中裁切（cover 模式）
+        // 等比放大铺满、右对齐裁切：让少女始终显示在窗口右侧
         float scale = Math.Max((float)Width / _bg.Width, (float)Height / _bg.Height);
         int w = (int)(_bg.Width * scale + 0.5f);
         int h = (int)(_bg.Height * scale + 0.5f);
-        g.DrawImage(_bg, (Width - w) / 2, (Height - h) / 2, w, h);
+        g.DrawImage(_bg, Width - w, (Height - h) / 2, w, h);
         // 一层很淡的白纱，保证文字可读
-        using var veil = new SolidBrush(Color.FromArgb(34, Color.White));
+        using var veil = new SolidBrush(Color.FromArgb(30, Color.White));
         g.FillRectangle(veil, ClientRectangle);
     }
 
@@ -199,12 +207,12 @@ public class MainForm : Form
     {
         _btnMin = new IconButton
         {
-            Left = 1102, Top = 18, Width = 30, Height = 30,
+            Left = 1070, Top = 18, Width = 30, Height = 30,
             IconImage = DrawIcons.Make("min", Color.FromArgb(0x5E, 0x6B, 0x87), 16)
         };
         _btnClose = new IconButton
         {
-            Left = 1138, Top = 18, Width = 30, Height = 30,
+            Left = 1106, Top = 18, Width = 30, Height = 30,
             IconImage = DrawIcons.Make("close", Color.FromArgb(0x5E, 0x6B, 0x87), 16)
         };
         _btnClose.HoverImage = DrawIcons.Make("close", Color.White, 16);
@@ -218,12 +226,12 @@ public class MainForm : Form
     {
         _sidebar = new RoundedPanel
         {
-            Left = 12, Top = 12, Width = 234, Height = 776, Radius = 18,
+            Left = 12, Top = 12, Width = 234, Height = 744, Radius = 18,
             FillColor = Color.FromArgb(208, 255, 255, 255),
             ShowBorder = false
         };
 
-        var avatar = new CatAvatar { Left = 18, Top = 16, Width = 48, Height = 48 };
+        var avatar = new MascotAvatar { Left = 18, Top = 16, Width = 48, Height = 48 };
         var name = new Label
         {
             Text = "C 盘腾腾酱",
@@ -248,10 +256,10 @@ public class MainForm : Form
 
         _bubble = new SpeechBubble
         {
-            Left = 14, Top = 594, Width = 204, Height = 92,
+            Left = 14, Top = 570, Width = 204, Height = 92,
             Message = "主人，C 盘空间还不够吗？\r\n我来帮你~"
         };
-        var cat = new CatAvatar { Left = 70, Top = 692, Width = 74, Height = 74 };
+        var cat = new MascotAvatar { Left = 74, Top = 668, Width = 70, Height = 70 };
 
         _sidebar.Controls.AddRange(new Control[]
         {
@@ -272,7 +280,7 @@ public class MainForm : Form
 
     private void BuildHeader()
     {
-        _avatarHeader = new CatAvatar { Left = 270, Top = 24, Width = 80, Height = 80 };
+        _avatarHeader = new MascotAvatar { Left = 270, Top = 24, Width = 80, Height = 80, ShowLinkBadge = true };
         _lblAppTitle = new Label
         {
             Text = "C 盘腾腾酱",
@@ -286,56 +294,56 @@ public class MainForm : Form
             Left = 366, Top = 76, Width = 460, Height = 20,
             ForeColor = TextGray
         };
-        _note = new NoteLabel { Text = "C 盘也要\n呼吸哦~", Left = 742, Top = 26, Width = 190, Height = 96 };
+        _note = new NoteLabel { Text = "C 盘也要\n呼吸哦~", Left = 806, Top = 22, Width = 190, Height = 96 };
     }
 
     private RoundedPanel BuildHomePage()
     {
-        var card = new RoundedPanel { Left = 264, Top = 130, Width = 672, Height = 656, Radius = 18 };
+        var card = new RoundedPanel { Left = 264, Top = 132, Width = 576, Height = 624, Radius = 18 };
 
         var tileSrc = new PictureBox
         {
             Image = DrawIcons.FolderTile(34, Color.FromArgb(0xE8, 0xF0, 0xFE), Blue),
-            Left = 26, Top = 26, Width = 34, Height = 34,
+            Left = 22, Top = 20, Width = 34, Height = 34,
             SizeMode = PictureBoxSizeMode.CenterImage
         };
         var lblSrc = new Label
         {
             Text = "要转移的文件夹",
-            Left = 70, Top = 32, Width = 200, Height = 20,
+            Left = 64, Top = 26, Width = 200, Height = 20,
             Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold),
             ForeColor = TextDark
         };
         _btnPresets = new GhostButton
         {
             Text = "从常用位置选择 ▾",
-            Left = 476, Top = 28, Width = 170, Height = 28,
+            Left = 382, Top = 24, Width = 170, Height = 28,
             ShowBorder = false
         };
-        _inpSrc = new InputField { Left = 26, Top = 66, Width = 620, Placeholder = "请选择要转移的文件夹路径" };
+        _inpSrc = new InputField { Left = 22, Top = 62, Width = 532, Placeholder = "请选择要转移的文件夹路径" };
         _inpSrc.BrowseButton.Click += (_, _) => Browse(_inpSrc, "选择要转移的文件夹（C 盘缓存）");
 
         var tileDst = new PictureBox
         {
             Image = DrawIcons.FolderTile(34, Color.FromArgb(0xE7, 0xF8, 0xF0), Color.FromArgb(0x34, 0xB3, 0x7E)),
-            Left = 26, Top = 140, Width = 34, Height = 34,
+            Left = 22, Top = 130, Width = 34, Height = 34,
             SizeMode = PictureBoxSizeMode.CenterImage
         };
         var lblDst = new Label
         {
             Text = "目标文件夹",
-            Left = 70, Top = 146, Width = 200, Height = 20,
+            Left = 64, Top = 136, Width = 200, Height = 20,
             Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold),
             ForeColor = TextDark
         };
-        _inpDst = new InputField { Left = 26, Top = 180, Width = 620, Placeholder = "请选择目标文件夹路径" };
+        _inpDst = new InputField { Left = 22, Top = 172, Width = 532, Placeholder = "请选择目标文件夹路径" };
         _inpDst.BrowseButton.Click += (_, _) => Browse(_inpDst, "选择转移目标位置（其他盘）");
 
-        _lblSizeLine = new Label { Left = 26, Top = 232, Width = 620, Height = 16, ForeColor = TextGray, AutoEllipsis = true };
+        _lblSizeLine = new Label { Left = 22, Top = 222, Width = 532, Height = 16, ForeColor = TextGray, AutoEllipsis = true };
 
         _lstChecks = new ListBox
         {
-            Left = 26, Top = 252, Width = 620, Height = 86,
+            Left = 22, Top = 242, Width = 532, Height = 62,
             BorderStyle = BorderStyle.None,
             DrawMode = DrawMode.OwnerDrawFixed,
             ItemHeight = 19,
@@ -347,29 +355,29 @@ public class MainForm : Form
 
         var infoCard = BuildInfoCard();
 
-        _progress = new CuteProgressBar { Left = 26, Top = 486, Width = 620, Visible = false };
+        _progress = new CuteProgressBar { Left = 22, Top = 462, Width = 532, Visible = false };
         _lblStatus = new Label
         {
-            Left = 26, Top = 498, Width = 620, Height = 16,
+            Left = 22, Top = 476, Width = 532, Height = 16,
             ForeColor = TextGray, AutoEllipsis = true,
             TextAlign = ContentAlignment.MiddleCenter
         };
-        _btnGo = new GradientButton { Left = 186, Top = 520, Width = 300, Height = 46, Text = "创建软链接" };
+        _btnGo = new GradientButton { Left = 163, Top = 500, Width = 250, Height = 46, Text = "创建软链接" };
         _btnCancelSmall = new GhostButton
         {
-            Text = "取消", Left = 494, Top = 525, Width = 80, Height = 36, Visible = false
+            Text = "取消", Left = 429, Top = 509, Width = 80, Height = 36, Visible = false
         };
         _btnDeleteBak = new GhostButton
         {
-            Text = "删除备份，释放 C 盘空间", Left = 126, Top = 574, Width = 210, Height = 32, Visible = false
+            Text = "删除备份，释放 C 盘空间", Left = 78, Top = 560, Width = 200, Height = 32, Visible = false
         };
         _btnOpenDst = new GhostButton
         {
-            Text = "打开目标文件夹", Left = 350, Top = 574, Width = 210, Height = 32, Visible = false
+            Text = "打开目标文件夹", Left = 298, Top = 560, Width = 200, Height = 32, Visible = false
         };
         _lblBak = new Label
         {
-            Left = 26, Top = 612, Width = 620, Height = 16,
+            Left = 22, Top = 598, Width = 532, Height = 16,
             ForeColor = Color.FromArgb(0x2E, 0x8B, 0x62), AutoEllipsis = true,
             TextAlign = ContentAlignment.MiddleCenter
         };
@@ -396,7 +404,7 @@ public class MainForm : Form
     {
         var card = new RoundedPanel
         {
-            Left = 26, Top = 344, Width = 620, Height = 134, Radius = 12,
+            Left = 22, Top = 312, Width = 532, Height = 140, Radius = 12,
             FillColor = Color.FromArgb(0xEA, 0xF2, 0xFF),
             BorderColor = Color.FromArgb(0xD5, 0xE4, 0xFB)
         };
@@ -416,14 +424,14 @@ public class MainForm : Form
         var desc = new Label
         {
             Text = "以下类型的文件夹通常不适合创建软链接，可能会导致系统异常或无法正常运行：",
-            Left = 14, Top = 38, Width = 592, Height = 30,
+            Left = 14, Top = 38, Width = 504, Height = 30,
             ForeColor = Color.FromArgb(0x6E, 0x82, 0xA8),
             Font = new Font("Microsoft YaHei UI", 8.5F)
         };
         Label Bullet(string text, int x, int y) => new()
         {
             Text = "•  " + text,
-            Left = x, Top = y, Width = 296, Height = 18,
+            Left = x, Top = y, Width = 252, Height = 18,
             ForeColor = Color.FromArgb(0x55, 0x68, 0x8C),
             Font = new Font("Microsoft YaHei UI", 8.25F),
             AutoEllipsis = true
@@ -434,16 +442,16 @@ public class MainForm : Form
             Bullet("Windows 系统目录（如 C:\\Windows）", 14, 72),
             Bullet("Program Files 目录", 14, 94),
             Bullet("Program Files (x86) 目录", 14, 116),
-            Bullet("用户个人目录（如 C:\\Users）", 316, 72),
-            Bullet("系统设置相关目录（如 C:\\Windows\\System32）", 316, 94),
-            Bullet("虚拟内存相关目录（如 pagefile.sys 所在目录）", 316, 116)
+            Bullet("用户个人目录（如 C:\\Users）", 278, 72),
+            Bullet("系统设置相关目录（如 C:\\Windows\\System32）", 278, 94),
+            Bullet("虚拟内存相关目录（如 pagefile.sys 所在目录）", 278, 116)
         });
         return card;
     }
 
     private RoundedPanel BuildHistoryPage()
     {
-        var card = new RoundedPanel { Left = 264, Top = 26, Width = 672, Height = 756, Radius = 18, Visible = false };
+        var card = new RoundedPanel { Left = 264, Top = 26, Width = 576, Height = 730, Radius = 18, Visible = false };
 
         var title = new Label
         {
@@ -452,12 +460,12 @@ public class MainForm : Form
             Font = new Font("Microsoft YaHei UI", 14F, FontStyle.Bold),
             ForeColor = TextDark
         };
-        _btnOpenDataFolder = new GhostButton { Text = "打开记录文件夹", Left = 346, Top = 20, Width = 160, Height = 32 };
-        _btnRefreshHistory = new GhostButton { Text = "刷新", Left = 520, Top = 20, Width = 126, Height = 32 };
+        _btnOpenDataFolder = new GhostButton { Text = "打开记录文件夹", Left = 290, Top = 20, Width = 150, Height = 32 };
+        _btnRefreshHistory = new GhostButton { Text = "刷新", Left = 452, Top = 20, Width = 100, Height = 32 };
 
         _grid = new DataGridView
         {
-            Left = 26, Top = 66, Width = 620, Height = 430,
+            Left = 26, Top = 66, Width = 524, Height = 420,
             BorderStyle = BorderStyle.None,
             BackgroundColor = Color.White,
             RowHeadersVisible = false,
@@ -495,13 +503,13 @@ public class MainForm : Form
         var lblLog = new Label
         {
             Text = "运行日志",
-            Left = 26, Top = 506, Width = 200, Height = 20,
+            Left = 26, Top = 498, Width = 200, Height = 20,
             Font = new Font("Microsoft YaHei UI", 9.75F, FontStyle.Bold),
             ForeColor = TextBody
         };
         _txtLog = new TextBox
         {
-            Left = 26, Top = 530, Width = 620, Height = 200,
+            Left = 26, Top = 522, Width = 524, Height = 182,
             ReadOnly = true, Multiline = true,
             ScrollBars = ScrollBars.Vertical,
             BackColor = Color.White,
@@ -516,7 +524,7 @@ public class MainForm : Form
 
     private RoundedPanel BuildSettingsPage()
     {
-        var card = new RoundedPanel { Left = 264, Top = 26, Width = 672, Height = 756, Radius = 18, Visible = false };
+        var card = new RoundedPanel { Left = 264, Top = 26, Width = 576, Height = 730, Radius = 18, Visible = false };
 
         var title = new Label
         {
@@ -528,7 +536,7 @@ public class MainForm : Form
 
         var about = new RoundedPanel
         {
-            Left = 26, Top = 66, Width = 620, Height = 150, Radius = 12,
+            Left = 26, Top = 66, Width = 524, Height = 150, Radius = 12,
             FillColor = Color.FromArgb(0xFA, 0xFB, 0xFF),
             BorderColor = Color.FromArgb(0xE9, 0xED, 0xF7)
         };
@@ -538,18 +546,18 @@ public class MainForm : Form
                    "原理：创建目录联接（Junction），把 C 盘文件夹映射到其他盘。\r\n" +
                    "软件以为缓存还在 C 盘，实际数据在其他盘。全程无需管理员权限。\r\n\r\n" +
                    $"数据位置：{DataFolder}\\history.jsonl（迁移记录）",
-            Left = 20, Top = 18, Width = 580, Height = 120,
+            Left = 20, Top = 18, Width = 484, Height = 120,
             ForeColor = TextBody,
             Font = new Font("Microsoft YaHei UI", 9F)
         };
         about.Controls.Add(aboutText);
 
-        var btnData = new GhostButton { Text = "打开迁移记录文件夹", Left = 26, Top = 232, Width = 190, Height = 34 };
-        var btnApp = new GhostButton { Text = "打开程序所在文件夹", Left = 232, Top = 232, Width = 190, Height = 34 };
+        var btnData = new GhostButton { Text = "打开迁移记录文件夹", Left = 26, Top = 232, Width = 180, Height = 34 };
+        var btnApp = new GhostButton { Text = "打开程序所在文件夹", Left = 220, Top = 232, Width = 180, Height = 34 };
 
         var tips = new RoundedPanel
         {
-            Left = 26, Top = 286, Width = 620, Height = 210, Radius = 12,
+            Left = 26, Top = 286, Width = 524, Height = 210, Radius = 12,
             FillColor = Color.FromArgb(0xEA, 0xF2, 0xFF),
             BorderColor = Color.FromArgb(0xD5, 0xE4, 0xFB)
         };
@@ -560,7 +568,7 @@ public class MainForm : Form
                    "•  原文件夹会保留为 .bak 备份，确认软件正常后再删除备份释放空间。\r\n" +
                    "•  部分软件大版本更新可能使联接失效：若 C 盘空间回升，请检查原文件夹\r\n    是否变成了普通文件夹（迁移记录里有当时的路径）。\r\n" +
                    "•  游戏优先用 Steam / Epic 自带的移动库功能；OneDrive 目录不建议迁移。",
-            Left = 20, Top = 16, Width = 584, Height = 184,
+            Left = 20, Top = 16, Width = 488, Height = 184,
             ForeColor = Color.FromArgb(0x55, 0x68, 0x8C),
             Font = new Font("Microsoft YaHei UI", 9F)
         };

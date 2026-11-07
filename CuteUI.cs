@@ -382,16 +382,68 @@ public class NoteLabel : TranslucentControl
     }
 }
 
-/// <summary>小猫吉祥物头像。</summary>
-public class CatAvatar : TranslucentControl
+/// <summary>仓鼠吉祥物头像：内嵌图片圆形裁切 + 浅蓝描边 + 右下角链接小徽章。缺图时回退到手绘小猫。</summary>
+public class MascotAvatar : TranslucentControl
 {
+    private static Image? _img;
+    private static bool _tried;
+
+    private static Image? MascotImage
+    {
+        get
+        {
+            if (!_tried)
+            {
+                _tried = true;
+                try
+                {
+                    using var s = typeof(MascotAvatar).Assembly.GetManifestResourceStream("CacheMover.assets.mascot.png");
+                    if (s != null) _img = Image.FromStream(s);
+                }
+                catch { /* 缺图时回退 */ }
+            }
+            return _img;
+        }
+    }
+
+    /// <summary>是否在右下角画链接小徽章（标题区头像用）。</summary>
+    public bool ShowLinkBadge { get; set; }
+
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
         int size = Math.Min(Width, Height);
-        g.DrawImage(CatRenderer.Render(size), (Width - size) / 2, (Height - size) / 2, size, size);
+        var img = MascotImage;
+        if (img == null)
+        {
+            g.DrawImage(CatRenderer.Render(size), (Width - size) / 2, (Height - size) / 2, size, size);
+            return;
+        }
+
+        var rect = new Rectangle((Width - size) / 2, (Height - size) / 2, size, size);
+        using (var b = new SolidBrush(Color.White)) g.FillEllipse(b, rect);
+        using (var path = new GraphicsPath())
+        {
+            path.AddEllipse(rect);
+            var oldClip = g.Clip;
+            g.SetClip(path, CombineMode.Intersect);
+            g.DrawImage(img, rect);
+            g.Clip = oldClip;
+        }
+        using (var ring = new Pen(Color.FromArgb(0xBF, 0xD5, 0xF2), Math.Max(1.6f, size / 30f)))
+            g.DrawEllipse(ring, rect.X + 1, rect.Y + 1, rect.Width - 2, rect.Height - 2);
+
+        if (ShowLinkBadge)
+        {
+            int bs = Math.Max(16, size / 3);
+            var br = new Rectangle(rect.Right - bs + 2, rect.Bottom - bs + 2, bs, bs);
+            using (var b = new SolidBrush(Color.FromArgb(0x6D, 0x9E, 0xF6))) g.FillEllipse(b, br);
+            using (var edge = new Pen(Color.White, 2f)) g.DrawEllipse(edge, br);
+            using var icon = DrawIcons.Make("link", Color.White, bs - 8);
+            g.DrawImage(icon, br.X + 4, br.Y + 4);
+        }
     }
 }
 
