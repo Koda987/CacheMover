@@ -318,9 +318,8 @@ public class InputField : Panel
         using (var b = new SolidBrush(Color.White)) g.FillPath(b, path);
         using var pen = new Pen(_focus ? Color.FromArgb(0x6D, 0x9E, 0xF6) : Color.FromArgb(0xE1, 0xE6, 0xF2));
         g.DrawPath(pen, path);
-        // 屏幕上这行字被不透明 TextBox 盖住（显示靠上层 Label）；截图模式下 TextBox
-        // 被临时隐藏，由这里的绘制保证占位文字出现在 DrawToBitmap 结果中
-        if (Placeholder.Length > 0 && Box.Text.Length == 0 && !_focus)
+        // 仅在 TextBox 被隐藏时（--screenshot 截图模式）绘制，避免与上层 Label 叠成重影
+        if (Placeholder.Length > 0 && Box.Text.Length == 0 && !_focus && !Box.Visible)
             TextRenderer.DrawText(g, _placeholderText, _placeholder.Font,
                 new Point(17, (Height - _placeholder.Font.Height) / 2), Color.FromArgb(0xB9, 0xC2, 0xD8));
     }
