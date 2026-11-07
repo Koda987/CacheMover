@@ -570,16 +570,17 @@ public static class DrawIcons
                 }
                 break;
             case "folder":
-                using (var folderPen = new Pen(color, 1.6f)
+                using (var folderPen = new Pen(color, 1.4f)
                 {
                     StartCap = LineCap.Round,
                     EndCap = LineCap.Round,
                     LineJoin = LineJoin.Round
                 })
                 {
-                    using (var path = UiUtil.RoundedPath(new Rectangle(3, 8, 18, 11), 3))
+                    // 主体偏方、圆角 2；tab 左缘与主体左缘对齐
+                    using (var path = UiUtil.RoundedPath(new Rectangle(6, 8, 14, 12), 2))
                         g.DrawPath(folderPen, path);
-                    g.DrawLines(folderPen, new PointF[] { new(6.5f, 8), new(6.5f, 5.5f), new(10.5f, 5.5f), new(12.5f, 8) });
+                    g.DrawLines(folderPen, new PointF[] { new(6f, 8), new(6f, 4.5f), new(10.5f, 4.5f), new(12.5f, 8) });
                 }
                 break;
             case "link":
