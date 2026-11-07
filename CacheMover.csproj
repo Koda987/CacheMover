@@ -9,7 +9,8 @@
     <AssemblyName>CacheMover</AssemblyName>
     <RootNamespace>CacheMover</RootNamespace>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <ApplicationIcon>assets\app.ico</ApplicationIcon>
+    <!-- 图片素材不入 git 仓库；存在时嵌入，缺失时程序自动回退（渐变背景/手绘吉祥物/默认图标） -->
+    <ApplicationIcon Condition="Exists('assets/app.ico')">assets\app.ico</ApplicationIcon>
     <Version>1.2.0</Version>
     <AssemblyTitle>缓存搬家 CacheMover</AssemblyTitle>
     <Product>缓存搬家 CacheMover</Product>
@@ -30,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="assets\bg.jpg" />
-    <EmbeddedResource Include="assets\mascot.png" />
+    <EmbeddedResource Include="assets\bg.jpg" Condition="Exists('assets/bg.jpg')" />
+    <EmbeddedResource Include="assets\mascot.png" Condition="Exists('assets/mascot.png')" />
   </ItemGroup>
 
 </Project>

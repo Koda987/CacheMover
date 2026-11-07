@@ -1,2 +1,8 @@
 bin/
 obj/
+
+# 图片素材不入库（本地保留；缺失时程序自动回退到内置兜底样式）
+7.jpg
+assets/bg.jpg
+assets/mascot.png
+assets/app.ico
