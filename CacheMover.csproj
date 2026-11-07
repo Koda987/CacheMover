@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="assets\bg.png" />
+    <EmbeddedResource Include="assets\bg.jpg" />
     <EmbeddedResource Include="assets\mascot.png" />
   </ItemGroup>
 

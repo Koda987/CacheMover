@@ -126,20 +126,12 @@ public class MainForm : Form
     {
         try
         {
-            using var s = typeof(MainForm).Assembly.GetManifestResourceStream("CacheMover.assets.bg.png");
+            using var s = typeof(MainForm).Assembly.GetManifestResourceStream("CacheMover.assets.bg.jpg");
             if (s == null) return (null, null);
             var ms = new MemoryStream();
             s.CopyTo(ms);
             ms.Position = 0;
-            var full = Image.FromStream(ms);
-            // 裁掉原图右侧约 9.5%（生成图右下角的水印区域）
-            int cropW = full.Width - (int)(full.Width * 0.095);
-            var bmp = new Bitmap(cropW, full.Height);
-            using (var g = Graphics.FromImage(bmp))
-                g.DrawImage(full, new Rectangle(0, 0, cropW, full.Height),
-                    new Rectangle(0, 0, cropW, full.Height), GraphicsUnit.Pixel);
-            full.Dispose();
-            return (bmp, ms);
+            return (Image.FromStream(ms), ms);
         }
         catch
         {
