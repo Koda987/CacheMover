@@ -22,7 +22,8 @@ public class MainForm : Form
     // ---------- 首页 ----------
     private MascotAvatar _avatarHeader = null!;
     private Label _lblAppTitle = null!, _lblAppSub = null!, _lblSizeLine = null!, _lblStatus = null!, _lblBak = null!;
-    private NoteLabel _note = null!;
+    private NoteLabel? _note;
+    private PictureBox? _noteSticker;
     private RoundedPanel _pageHome = null!;
     private InputField _inpSrc = null!, _inpDst = null!;
     private ListBox _lstChecks = null!;
@@ -98,7 +99,8 @@ public class MainForm : Form
         Controls.AddRange(new Control[]
         {
             _sidebar, _btnMin, _btnClose,
-            _avatarHeader, _lblAppTitle, _lblAppSub, _note,
+            _avatarHeader, _lblAppTitle, _lblAppSub,
+            _noteSticker ?? (Control)_note!,
             _pageHome, _pageHistory, _pageSettings
         });
 
@@ -363,7 +365,20 @@ public class MainForm : Form
             Left = 366, Top = 76, Width = 460, Height = 20,
             ForeColor = TextGray
         };
-        _note = new NoteLabel { Text = "C 盘也要\n呼吸哦~", Left = 714, Top = 22, Width = 230, Height = 96 };
+        if (IconAssets.NoteSticker != null)
+        {
+            // 手绘文字贴纸（素材自带装饰爱心与倾斜排版）
+            _noteSticker = new PictureBox
+            {
+                Left = 724, Top = 14, Width = 220, Height = 110,
+                Image = IconAssets.NoteSticker,
+                SizeMode = PictureBoxSizeMode.Zoom
+            };
+        }
+        else
+        {
+            _note = new NoteLabel { Text = "C 盘也要\n呼吸哦~", Left = 714, Top = 22, Width = 230, Height = 96 };
+        }
     }
 
     private RoundedPanel BuildHomePage()
@@ -669,7 +684,9 @@ public class MainForm : Form
     {
         bool home = index == 0;
         _pageHome.Visible = home;
-        _avatarHeader.Visible = _lblAppTitle.Visible = _lblAppSub.Visible = _note.Visible = home;
+        _avatarHeader.Visible = _lblAppTitle.Visible = _lblAppSub.Visible = home;
+        if (_noteSticker != null) _noteSticker.Visible = home;
+        else if (_note != null) _note.Visible = home;
         _pageHistory.Visible = index == 1;
         _pageSettings.Visible = index == 2;
         _navHome.Selected = index == 0;

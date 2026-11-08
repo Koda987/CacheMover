@@ -39,6 +39,7 @@
     <EmbeddedResource Include="assets\cloud-sticker.png" Condition="Exists('assets/cloud-sticker.png')" />
     <EmbeddedResource Include="assets\cat-avatar.png" Condition="Exists('assets/cat-avatar.png')" />
     <EmbeddedResource Include="assets\gear.png" Condition="Exists('assets/gear.png')" />
+    <EmbeddedResource Include="assets\note-sticker.png" Condition="Exists('assets/note-sticker.png')" />
   </ItemGroup>
 
 </Project>

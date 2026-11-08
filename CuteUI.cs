@@ -386,9 +386,18 @@ public class NoteLabel : TranslucentControl
         g.TranslateTransform(Width / 2f, Height / 2f);
         g.RotateTransform(-8f);
         using var f = UiUtil.HandFont(13.5F);
-        using var b = new SolidBrush(Color.FromArgb(0xA5, 0xBE, 0xE8));
         var sz = g.MeasureString(Text, f);
-        g.DrawString(Text, f, b, -sz.Width / 2, -sz.Height / 2);
+        var origin = new PointF(-sz.Width / 2, -sz.Height / 2);
+        using var path = new GraphicsPath();
+        path.AddString(Text, f.FontFamily, (int)f.Style, f.Size * g.DpiY / 72f, origin, StringFormat.GenericDefault);
+        // 白色描边：文字落在头发/云层等复杂背景上时依然清晰
+        using (var outline = new Pen(Color.FromArgb(210, Color.White), 4.5f))
+        {
+            outline.LineJoin = LineJoin.Round;
+            g.DrawPath(outline, path);
+        }
+        using var b = new SolidBrush(Color.FromArgb(0x8F, 0xB2, 0xE4));
+        g.FillPath(b, path);
     }
 }
 
@@ -538,7 +547,7 @@ public static class CatRenderer
 /// <summary>玻璃质感文件夹图标（本地素材，缺失时界面回退到手绘版）。</summary>
 public static class IconAssets
 {
-    private static Image? _src, _dst, _mini, _sticker, _cat, _gear;
+    private static Image? _src, _dst, _mini, _sticker, _cat, _gear, _noteSticker;
 
     /// <summary>扫描图像的实际内容边界（忽略透明边），返回原图坐标区域。</summary>
     private static RectangleF GetContentBounds(Image img)
@@ -621,6 +630,9 @@ public static class IconAssets
 
     /// <summary>设置导航的蓝灰齿轮图标（0.8 视觉占比与手绘图标对齐）。</summary>
     public static Image? Gear => _gear ??= Load("CacheMover.assets.gear.png", 44, 0.8f);
+
+    /// <summary>「C盘也要呼吸哦~」手绘文字贴纸（自带装饰与倾斜排版）。</summary>
+    public static Image? NoteSticker => _noteSticker ??= Load("CacheMover.assets.note-sticker.png", 440);
 }
 
 /// <summary>运行时绘制的扁平图标。</summary>
