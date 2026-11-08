@@ -318,7 +318,22 @@ public class InputField : Panel
         _placeholder.SetBounds(17, (Height - _placeholder.Height) / 2, Width - 68, _placeholder.Height);
     }
 
-    private void UpdatePlaceholder() => _placeholder.Visible = Box.Text.Length == 0 && !_focus;
+    private void UpdatePlaceholder() => _placeholder.Visible = Box.Text.Length == 0 && !_focus && Box.Visible;
+
+    /// <summary>截图前调用：隐藏 TextBox 与 Label，让 OnPaint 绘制的占位文字单独显示，避免双重渲染。</summary>
+    public void PrepareForBitmapCapture()
+    {
+        Box.Visible = false;
+        _placeholder.Visible = false;
+        Invalidate();
+    }
+
+    /// <summary>截图后调用：恢复正常显示。</summary>
+    public void EndBitmapCapture()
+    {
+        Box.Visible = true;
+        UpdatePlaceholder();
+    }
 
     protected override void OnPaint(PaintEventArgs e)
     {

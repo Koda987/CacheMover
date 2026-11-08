@@ -146,13 +146,13 @@ public class MainForm : Form
         {
             string Shot(string name)
             {
-                // 隐藏不透明 TextBox，让 OnPaint 里的占位文字出现在截图中
-                bool v1 = _inpSrc.Box.Visible, v2 = _inpDst.Box.Visible;
-                _inpSrc.Box.Visible = _inpDst.Box.Visible = false;
+                // 隐藏 TextBox 与上层 Label，让 OnPaint 绘制的占位文字单独出现在截图中
+                _inpSrc.PrepareForBitmapCapture();
+                _inpDst.PrepareForBitmapCapture();
                 using var bmp = new Bitmap(Width, Height);
                 DrawToBitmap(bmp, new Rectangle(0, 0, Width, Height));
-                _inpSrc.Box.Visible = v1;
-                _inpDst.Box.Visible = v2;
+                _inpSrc.EndBitmapCapture();
+                _inpDst.EndBitmapCapture();
                 var path = Path.Combine(_shotDir, name);
                 bmp.Save(path, System.Drawing.Imaging.ImageFormat.Png);
                 return path;
