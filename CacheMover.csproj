@@ -35,6 +35,7 @@
     <EmbeddedResource Include="assets\mascot.png" Condition="Exists('assets/mascot.png')" />
     <EmbeddedResource Include="assets\folder-src.png" Condition="Exists('assets/folder-src.png')" />
     <EmbeddedResource Include="assets\folder-dst.png" Condition="Exists('assets/folder-dst.png')" />
+    <EmbeddedResource Include="assets\folder-mini.png" Condition="Exists('assets/folder-mini.png')" />
   </ItemGroup>
 
 </Project>

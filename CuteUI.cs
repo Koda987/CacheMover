@@ -98,6 +98,8 @@ public class IconButton : TranslucentControl
         var icon = _hover && Enabled && HoverImage != null ? HoverImage : IconImage;
         if (icon == null) return;
         int size = Math.Min(Width, Height) - 8;
+        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
         if (!Enabled) ControlPaint.DrawImageDisabled(g, icon, (Width - size) / 2, (Height - size) / 2, Color.White);
         else g.DrawImage(icon, new Rectangle((Width - size) / 2, (Height - size) / 2, size, size));
     }
@@ -245,7 +247,8 @@ public class InputField : Panel
         BrowseButton = new IconButton
         {
             Size = new Size(32, 32),
-            IconImage = DrawIcons.Make("folder", Color.FromArgb(0x8A, 0x97, 0xB5), 22)
+            IconImage = (Image?)IconAssets.FolderMini
+                        ?? DrawIcons.Make("folder", Color.FromArgb(0x8A, 0x97, 0xB5), 18)
         };
 
         _placeholder.ForeColor = Color.FromArgb(0xB9, 0xC2, 0xD8);
@@ -518,10 +521,10 @@ public static class CatRenderer
 /// <summary>玻璃质感文件夹图标（本地素材，缺失时界面回退到手绘版）。</summary>
 public static class IconAssets
 {
-    private static Image? _src, _dst;
-    private static bool _tried;
+    private static Image? _src, _dst, _mini;
 
-    private static Image? Load(string resource)
+    /// <summary>加载内嵌素材并等比缩放到 target 见方（透明留白补齐），失败返回 null。</summary>
+    private static Image? Load(string resource, int target)
     {
         try
         {
@@ -531,13 +534,14 @@ public static class IconAssets
             s.CopyTo(ms);
             ms.Position = 0;
             using var raw = Image.FromStream(ms);
-            // 原图很大，先高质量缩小一次；界面显示 34px，96px 缓存在高分屏下依然清晰
-            const int target = 96;
             var bmp = new Bitmap(target, target);
             using var g = Graphics.FromImage(bmp);
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.DrawImage(raw, new Rectangle(0, 0, target, target));
+            float k = Math.Min((float)target / raw.Width, (float)target / raw.Height);
+            int w = Math.Max(1, (int)(raw.Width * k));
+            int h = Math.Max(1, (int)(raw.Height * k));
+            g.DrawImage(raw, new Rectangle((target - w) / 2, (target - h) / 2, w, h));
             return bmp;
         }
         catch
@@ -547,22 +551,13 @@ public static class IconAssets
     }
 
     /// <summary>「要转移的文件夹」蓝色玻璃图标。</summary>
-    public static Image? FolderSrc
-    {
-        get
-        {
-            if (!_tried)
-            {
-                _tried = true;
-                _src = Load("CacheMover.assets.folder-src.png");
-                _dst = Load("CacheMover.assets.folder-dst.png");
-            }
-            return _src;
-        }
-    }
+    public static Image? FolderSrc => _src ??= Load("CacheMover.assets.folder-src.png", 96);
 
     /// <summary>「目标文件夹」薄荷绿玻璃图标。</summary>
-    public static Image? FolderDst => FolderSrc != null ? _dst : null;
+    public static Image? FolderDst => _dst ??= Load("CacheMover.assets.folder-dst.png", 96);
+
+    /// <summary>输入框浏览按钮的蓝灰文件夹图标。</summary>
+    public static Image? FolderMini => _mini ??= Load("CacheMover.assets.folder-mini.png", 48);
 }
 
 /// <summary>运行时绘制的扁平图标。</summary>
