@@ -515,6 +515,56 @@ public static class CatRenderer
     }
 }
 
+/// <summary>玻璃质感文件夹图标（本地素材，缺失时界面回退到手绘版）。</summary>
+public static class IconAssets
+{
+    private static Image? _src, _dst;
+    private static bool _tried;
+
+    private static Image? Load(string resource)
+    {
+        try
+        {
+            using var s = typeof(IconAssets).Assembly.GetManifestResourceStream(resource);
+            if (s == null) return null;
+            using var ms = new MemoryStream();
+            s.CopyTo(ms);
+            ms.Position = 0;
+            using var raw = Image.FromStream(ms);
+            // 原图很大，先高质量缩小一次；界面显示 34px，96px 缓存在高分屏下依然清晰
+            const int target = 96;
+            var bmp = new Bitmap(target, target);
+            using var g = Graphics.FromImage(bmp);
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.DrawImage(raw, new Rectangle(0, 0, target, target));
+            return bmp;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>「要转移的文件夹」蓝色玻璃图标。</summary>
+    public static Image? FolderSrc
+    {
+        get
+        {
+            if (!_tried)
+            {
+                _tried = true;
+                _src = Load("CacheMover.assets.folder-src.png");
+                _dst = Load("CacheMover.assets.folder-dst.png");
+            }
+            return _src;
+        }
+    }
+
+    /// <summary>「目标文件夹」薄荷绿玻璃图标。</summary>
+    public static Image? FolderDst => FolderSrc != null ? _dst : null;
+}
+
 /// <summary>运行时绘制的扁平图标。</summary>
 public static class DrawIcons
 {
