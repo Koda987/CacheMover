@@ -342,8 +342,8 @@ public class MainForm : Form
         {
             Text = text,
             Left = 16, Top = 84 + index * 52, Width = 202, Height = 44,
-            Icon = customIcon ?? DrawIcons.Make(icon, Color.FromArgb(0x5E, 0x6B, 0x87), 22),
-            IconActive = customIcon ?? DrawIcons.Make(icon, Color.FromArgb(0x3D, 0x6F, 0xD4), 22)
+            Icon = customIcon ?? DrawIcons.Make(icon, Color.FromArgb(0x5E, 0x6B, 0x87), 22, 16f),
+            IconActive = customIcon ?? DrawIcons.Make(icon, Color.FromArgb(0x3D, 0x6F, 0xD4), 22, 16f)
         };
     }
 

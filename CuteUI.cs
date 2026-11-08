@@ -623,12 +623,13 @@ public static class IconAssets
 /// <summary>运行时绘制的扁平图标。</summary>
 public static class DrawIcons
 {
-    public static Bitmap Make(string kind, Color color, int size)
+    /// <summary>绘制线性图标。penDiv 控制笔画粗细（笔画宽 = size/penDiv），默认 10，导航类传 16 与齿轮素材粗细对齐。</summary>
+    public static Bitmap Make(string kind, Color color, int size, float penDiv = 10f)
     {
         var bmp = new Bitmap(size, size);
         using var g = Graphics.FromImage(bmp);
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        float w = Math.Max(1.8f, size / 10f);
+        float w = Math.Max(1.2f, size / penDiv);
         using var pen = new Pen(color, w)
         {
             StartCap = LineCap.Round,
