@@ -59,6 +59,9 @@ public class MainForm : Form
     private const int WM_NCLBUTTONDOWN = 0xA1;
     private const int HTCAPTION = 0x2;
 
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
+
     [DllImport("user32.dll")]
     private static extern bool ReleaseCapture();
 
@@ -224,9 +227,24 @@ public class MainForm : Form
         g.FillRectangle(veil, ClientRectangle);
     }
 
+    private bool _dwmRounded;
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        // Windows 11：交给 DWM 做系统级平滑圆角（Region 硬蒙版有锯齿）；Win10 回退 Region
+        if (!_screenshotMode && Environment.OSVersion.Version.Build >= 22000)
+        {
+            int pref = 2; // DWMWCP_ROUND
+            _dwmRounded = DwmSetWindowAttribute(Handle, 33 /* DWMWA_WINDOW_CORNER_PREFERENCE */, ref pref, 4) == 0;
+            if (_dwmRounded) Region = null;
+        }
+    }
+
     protected override void OnResize(EventArgs eventargs)
     {
         base.OnResize(eventargs);
+        if (_dwmRounded && !_screenshotMode) { Region = null; return; }
         Region = new Region(UiUtil.RoundedPath(new Rectangle(0, 0, Width, Height), 22));
     }
 
