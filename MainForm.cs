@@ -363,7 +363,7 @@ public class MainForm : Form
             Left = 366, Top = 76, Width = 460, Height = 20,
             ForeColor = TextGray
         };
-        _note = new NoteLabel { Text = "C 盘也要\n呼吸哦~", Left = 744, Top = 22, Width = 230, Height = 96 };
+        _note = new NoteLabel { Text = "C 盘也要\n呼吸哦~", Left = 714, Top = 22, Width = 230, Height = 96 };
     }
 
     private RoundedPanel BuildHomePage()
