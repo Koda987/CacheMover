@@ -373,7 +373,7 @@ public class MainForm : Form
         var tileSrc = new PictureBox
         {
             Image = (Image?)IconAssets.FolderSrc ?? DrawIcons.FolderTile(34, Color.FromArgb(0xE8, 0xF0, 0xFE), Blue),
-            Left = 22, Top = 24, Width = 64, Height = 64,
+            Left = 18, Top = 22, Width = 68, Height = 68,
             SizeMode = PictureBoxSizeMode.Zoom
         };
         var lblSrc = new Label
@@ -395,7 +395,7 @@ public class MainForm : Form
         var tileDst = new PictureBox
         {
             Image = (Image?)IconAssets.FolderDst ?? DrawIcons.FolderTile(34, Color.FromArgb(0xE7, 0xF8, 0xF0), Color.FromArgb(0x34, 0xB3, 0x7E)),
-            Left = 22, Top = 150, Width = 64, Height = 64,
+            Left = 18, Top = 148, Width = 68, Height = 68,
             SizeMode = PictureBoxSizeMode.Zoom
         };
         var lblDst = new Label
