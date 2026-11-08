@@ -373,13 +373,13 @@ public class MainForm : Form
         var tileSrc = new PictureBox
         {
             Image = (Image?)IconAssets.FolderSrc ?? DrawIcons.FolderTile(34, Color.FromArgb(0xE8, 0xF0, 0xFE), Blue),
-            Left = 22, Top = 20, Width = 52, Height = 52,
+            Left = 22, Top = 18, Width = 60, Height = 60,
             SizeMode = PictureBoxSizeMode.Zoom
         };
         var lblSrc = new Label
         {
             Text = "要转移的文件夹",
-            Left = 90, Top = 26, Width = 200, Height = 20,
+            Left = 100, Top = 24, Width = 200, Height = 20,
             Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold),
             ForeColor = TextDark
         };
@@ -389,30 +389,30 @@ public class MainForm : Form
             Left = 382, Top = 24, Width = 170, Height = 28,
             ShowBorder = false
         };
-        _inpSrc = new InputField { Left = 90, Top = 56, Width = 464, Placeholder = "请选择要转移的文件夹路径" };
+        _inpSrc = new InputField { Left = 88, Top = 56, Width = 466, Placeholder = "请选择要转移的文件夹路径" };
         _inpSrc.BrowseButton.Click += (_, _) => Browse(_inpSrc, "选择要转移的文件夹（C 盘缓存）");
 
         var tileDst = new PictureBox
         {
             Image = (Image?)IconAssets.FolderDst ?? DrawIcons.FolderTile(34, Color.FromArgb(0xE7, 0xF8, 0xF0), Color.FromArgb(0x34, 0xB3, 0x7E)),
-            Left = 22, Top = 142, Width = 52, Height = 52,
+            Left = 22, Top = 144, Width = 60, Height = 60,
             SizeMode = PictureBoxSizeMode.Zoom
         };
         var lblDst = new Label
         {
             Text = "目标文件夹",
-            Left = 90, Top = 148, Width = 200, Height = 20,
+            Left = 100, Top = 150, Width = 200, Height = 20,
             Font = new Font("Microsoft YaHei UI", 10.5F, FontStyle.Bold),
             ForeColor = TextDark
         };
-        _inpDst = new InputField { Left = 90, Top = 178, Width = 464, Placeholder = "请选择目标文件夹路径" };
+        _inpDst = new InputField { Left = 88, Top = 182, Width = 466, Placeholder = "请选择目标文件夹路径" };
         _inpDst.BrowseButton.Click += (_, _) => Browse(_inpDst, "选择转移目标位置（其他盘）");
 
-        _lblSizeLine = new Label { Left = 22, Top = 232, Width = 532, Height = 16, ForeColor = TextGray, AutoEllipsis = true };
+        _lblSizeLine = new Label { Left = 22, Top = 236, Width = 532, Height = 16, ForeColor = TextGray, AutoEllipsis = true };
 
         _lstChecks = new ListBox
         {
-            Left = 22, Top = 250, Width = 532, Height = 58,
+            Left = 22, Top = 254, Width = 532, Height = 58,
             BorderStyle = BorderStyle.None,
             DrawMode = DrawMode.OwnerDrawFixed,
             ItemHeight = 19,

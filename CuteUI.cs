@@ -80,6 +80,8 @@ public class IconButton : TranslucentControl
 {
     public Image? IconImage { get; set; }
     public Image? HoverImage { get; set; }
+    /// <summary>图标四周留白（图标边长 = min(宽,高) - IconInset）。</summary>
+    public int IconInset { get; set; } = 8;
     private bool _hover;
 
     public IconButton() => Cursor = Cursors.Hand;
@@ -97,7 +99,7 @@ public class IconButton : TranslucentControl
                 g.FillPath(b, path);
         var icon = _hover && Enabled && HoverImage != null ? HoverImage : IconImage;
         if (icon == null) return;
-        int size = Math.Min(Width, Height) - 8;
+        int size = Math.Max(8, Math.Min(Width, Height) - IconInset);
         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
         g.SmoothingMode = SmoothingMode.AntiAlias;
         if (!Enabled) ControlPaint.DrawImageDisabled(g, icon, (Width - size) / 2, (Height - size) / 2, Color.White);
@@ -250,7 +252,8 @@ public class InputField : Panel
 
         BrowseButton = new IconButton
         {
-            Size = new Size(40, 40),
+            Size = new Size(36, 36),
+            IconInset = 10, // 参考图：浏览图标小巧（约 26px）
             IconImage = (Image?)IconAssets.FolderMini
                         ?? DrawIcons.Make("folder", Color.FromArgb(0x8A, 0x97, 0xB5), 18)
         };
@@ -310,9 +313,9 @@ public class InputField : Panel
     private void Relayout()
     {
         int boxTop = (Height - Box.Height) / 2;
-        Box.SetBounds(16, boxTop, Width - 16 - 56, Box.Height);
-        BrowseButton.SetBounds(Width - 48, (Height - 40) / 2, 40, 40);
-        _placeholder.SetBounds(17, (Height - _placeholder.Height) / 2, Width - 72, _placeholder.Height);
+        Box.SetBounds(16, boxTop, Width - 16 - 52, Box.Height);
+        BrowseButton.SetBounds(Width - 44, (Height - 36) / 2, 36, 36);
+        _placeholder.SetBounds(17, (Height - _placeholder.Height) / 2, Width - 68, _placeholder.Height);
     }
 
     private void UpdatePlaceholder() => _placeholder.Visible = Box.Text.Length == 0 && !_focus;
