@@ -250,7 +250,7 @@ public class InputField : Panel
 
         BrowseButton = new IconButton
         {
-            Size = new Size(36, 36),
+            Size = new Size(40, 40),
             IconImage = (Image?)IconAssets.FolderMini
                         ?? DrawIcons.Make("folder", Color.FromArgb(0x8A, 0x97, 0xB5), 18)
         };
@@ -310,9 +310,9 @@ public class InputField : Panel
     private void Relayout()
     {
         int boxTop = (Height - Box.Height) / 2;
-        Box.SetBounds(16, boxTop, Width - 16 - 52, Box.Height);
-        BrowseButton.SetBounds(Width - 44, (Height - 36) / 2, 36, 36);
-        _placeholder.SetBounds(17, (Height - _placeholder.Height) / 2, Width - 68, _placeholder.Height);
+        Box.SetBounds(16, boxTop, Width - 16 - 56, Box.Height);
+        BrowseButton.SetBounds(Width - 48, (Height - 40) / 2, 40, 40);
+        _placeholder.SetBounds(17, (Height - _placeholder.Height) / 2, Width - 72, _placeholder.Height);
     }
 
     private void UpdatePlaceholder() => _placeholder.Visible = Box.Text.Length == 0 && !_focus;
@@ -537,8 +537,38 @@ public static class IconAssets
 {
     private static Image? _src, _dst, _mini, _sticker, _cat, _gear;
 
-    /// <summary>加载内嵌素材并等比缩放到 target 见方（透明留白补齐），失败返回 null。</summary>
-    private static Image? Load(string resource, int target)
+    /// <summary>扫描图像的实际内容边界（忽略透明边），返回原图坐标区域。</summary>
+    private static RectangleF GetContentBounds(Image img)
+    {
+        // 先缩到 64px 探测边界（快），再换算回原图坐标
+        const int probe = 64;
+        float scale = Math.Min((float)probe / img.Width, (float)probe / img.Height);
+        int w = Math.Max(1, (int)(img.Width * scale));
+        int h = Math.Max(1, (int)(img.Height * scale));
+        using var small = new Bitmap(w, h);
+        using (var g = Graphics.FromImage(small))
+            g.DrawImage(img, 0, 0, w, h);
+        int minX = w, minY = h, maxX = -1, maxY = -1;
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                if (small.GetPixel(x, y).A > 12)
+                {
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                }
+        if (maxX < 0) return new RectangleF(0, 0, img.Width, img.Height);
+        float pad = 1f / scale; // 外扩 1 探测像素，避免裁到抗锯齿边
+        float x0 = Math.Max(0, minX / scale - pad);
+        float y0 = Math.Max(0, minY / scale - pad);
+        float cw = Math.Min(img.Width - x0, (maxX - minX + 1) / scale + pad * 2);
+        float ch = Math.Min(img.Height - y0, (maxY - minY + 1) / scale + pad * 2);
+        return new RectangleF(x0, y0, cw, ch);
+    }
+
+    /// <summary>加载内嵌素材：裁掉透明边后等比缩放，fillRatio 控制内容占目标画布的比例（用于不同图标视觉大小对齐）。</summary>
+    private static Image? Load(string resource, int target, float fillRatio = 1f)
     {
         try
         {
@@ -552,10 +582,17 @@ public static class IconAssets
             using var g = Graphics.FromImage(bmp);
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            float k = Math.Min((float)target / raw.Width, (float)target / raw.Height);
-            int w = Math.Max(1, (int)(raw.Width * k));
-            int h = Math.Max(1, (int)(raw.Height * k));
-            g.DrawImage(raw, new Rectangle((target - w) / 2, (target - h) / 2, w, h));
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            var src = GetContentBounds(raw);
+            int side = Math.Max(1, (int)(target * Math.Clamp(fillRatio, 0.2f, 1f)));
+            float aspect = src.Width / src.Height;
+            int dw, dh;
+            if (aspect >= 1) { dw = side; dh = Math.Max(1, (int)(side / aspect)); }
+            else { dh = side; dw = Math.Max(1, (int)(side * aspect)); }
+            using var ia = new System.Drawing.Imaging.ImageAttributes();
+            ia.SetWrapMode(WrapMode.TileFlipXY); // 避免缩放边缘吃进透明色产生光晕
+            g.DrawImage(raw, new Rectangle((target - dw) / 2, (target - dh) / 2, dw, dh),
+                src.X, src.Y, src.Width, src.Height, GraphicsUnit.Pixel, ia);
             return bmp;
         }
         catch
@@ -571,7 +608,7 @@ public static class IconAssets
     public static Image? FolderDst => _dst ??= Load("CacheMover.assets.folder-dst.png", 96);
 
     /// <summary>输入框浏览按钮的蓝灰文件夹图标。</summary>
-    public static Image? FolderMini => _mini ??= Load("CacheMover.assets.folder-mini.png", 48);
+    public static Image? FolderMini => _mini ??= Load("CacheMover.assets.folder-mini.png", 48, 0.95f);
 
     /// <summary>侧边栏底部的云朵气泡+小猫贴纸。</summary>
     public static Image? CloudSticker => _sticker ??= Load("CacheMover.assets.cloud-sticker.png", 300);
@@ -579,8 +616,8 @@ public static class IconAssets
     /// <summary>玻璃蓝圆里的萌系小猫头像（自带链接徽章）。</summary>
     public static Image? CatAvatar => _cat ??= Load("CacheMover.assets.cat-avatar.png", 160);
 
-    /// <summary>设置导航的蓝灰齿轮图标。</summary>
-    public static Image? Gear => _gear ??= Load("CacheMover.assets.gear.png", 44);
+    /// <summary>设置导航的蓝灰齿轮图标（0.8 视觉占比与手绘图标对齐）。</summary>
+    public static Image? Gear => _gear ??= Load("CacheMover.assets.gear.png", 44, 0.8f);
 }
 
 /// <summary>运行时绘制的扁平图标。</summary>
