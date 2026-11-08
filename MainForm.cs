@@ -290,7 +290,7 @@ public class MainForm : Form
             ShowBorder = false
         };
 
-        var avatar = new MascotAvatar { Left = 18, Top = 16, Width = 48, Height = 48 };
+        var avatar = new MascotAvatar { Left = 18, Top = 16, Width = 48, Height = 48, CustomImage = IconAssets.CatAvatar };
         var name = new Label
         {
             Text = "C 盘腾腾酱",
@@ -308,38 +308,48 @@ public class MainForm : Form
 
         _navHome = MakeNav("首页", "home", 0);
         _navHistory = MakeNav("历史记录", "clock", 1);
-        _navSettings = MakeNav("设置", "gear", 2);
+        _navSettings = MakeNav("设置", "gear", 2, IconAssets.Gear);
         _navHome.Click += (_, _) => ShowPage(0);
         _navHistory.Click += (_, _) => ShowPage(1);
         _navSettings.Click += (_, _) => ShowPage(2);
 
-        _bubble = new SpeechBubble
+        if (IconAssets.CloudSticker != null)
         {
-            Left = 14, Top = 570, Width = 204, Height = 92,
-            Message = "主人，\r\nC 盘空间还不够吗？\r\n我来帮你~"
-        };
-        var cat = new MascotAvatar { Left = 74, Top = 668, Width = 70, Height = 70 };
-
-        _sidebar.Controls.AddRange(new Control[]
+            // 云朵气泡+小猫贴纸（素材图自带文案）
+            var sticker = new PictureBox
+            {
+                Left = 12, Top = 560, Width = 210, Height = 182,
+                Image = IconAssets.CloudSticker,
+                SizeMode = PictureBoxSizeMode.Zoom
+            };
+            _sidebar.Controls.AddRange(new Control[] { avatar, name, sub, _navHome, _navHistory, _navSettings, sticker });
+        }
+        else
         {
-            avatar, name, sub, _navHome, _navHistory, _navSettings, _bubble, cat
-        });
+            _bubble = new SpeechBubble
+            {
+                Left = 14, Top = 570, Width = 204, Height = 92,
+                Message = "主人，\r\nC 盘空间还不够吗？\r\n我来帮你~"
+            };
+            var cat = new MascotAvatar { Left = 74, Top = 668, Width = 70, Height = 70, CustomImage = IconAssets.CatAvatar };
+            _sidebar.Controls.AddRange(new Control[] { avatar, name, sub, _navHome, _navHistory, _navSettings, _bubble, cat });
+        }
     }
 
-    private NavButton MakeNav(string text, string icon, int index)
+    private NavButton MakeNav(string text, string icon, int index, Image? customIcon = null)
     {
         return new NavButton
         {
             Text = text,
             Left = 16, Top = 84 + index * 52, Width = 202, Height = 44,
-            Icon = DrawIcons.Make(icon, Color.FromArgb(0x5E, 0x6B, 0x87), 22),
-            IconActive = DrawIcons.Make(icon, Color.FromArgb(0x3D, 0x6F, 0xD4), 22)
+            Icon = customIcon ?? DrawIcons.Make(icon, Color.FromArgb(0x5E, 0x6B, 0x87), 22),
+            IconActive = customIcon ?? DrawIcons.Make(icon, Color.FromArgb(0x3D, 0x6F, 0xD4), 22)
         };
     }
 
     private void BuildHeader()
     {
-        _avatarHeader = new MascotAvatar { Left = 270, Top = 24, Width = 80, Height = 80, ShowLinkBadge = true };
+        _avatarHeader = new MascotAvatar { Left = 270, Top = 24, Width = 80, Height = 80, ShowLinkBadge = true, CustomImage = IconAssets.CatAvatar };
         _lblAppTitle = new Label
         {
             Text = "C 盘腾腾酱",

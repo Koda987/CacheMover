@@ -36,6 +36,9 @@
     <EmbeddedResource Include="assets\folder-src.png" Condition="Exists('assets/folder-src.png')" />
     <EmbeddedResource Include="assets\folder-dst.png" Condition="Exists('assets/folder-dst.png')" />
     <EmbeddedResource Include="assets\folder-mini.png" Condition="Exists('assets/folder-mini.png')" />
+    <EmbeddedResource Include="assets\cloud-sticker.png" Condition="Exists('assets/cloud-sticker.png')" />
+    <EmbeddedResource Include="assets\cat-avatar.png" Condition="Exists('assets/cat-avatar.png')" />
+    <EmbeddedResource Include="assets\gear.png" Condition="Exists('assets/gear.png')" />
   </ItemGroup>
 
 </Project>

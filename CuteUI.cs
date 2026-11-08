@@ -133,7 +133,11 @@ public class NavButton : TranslucentControl
         }
         var color = Selected ? Color.FromArgb(0x3D, 0x6F, 0xD4) : Color.FromArgb(0x5E, 0x6B, 0x87);
         var icon = Selected ? IconActive : Icon;
-        if (icon != null) g.DrawImage(icon, 16, (Height - 22) / 2, 22, 22);
+        if (icon != null)
+        {
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.DrawImage(icon, 16, (Height - 22) / 2, 22, 22);
+        }
         TextRenderer.DrawText(g, Text, Selected ? FontSelected : FontNormal,
             new Point(50, (Height - Font.Height) / 2), color);
     }
@@ -246,7 +250,7 @@ public class InputField : Panel
 
         BrowseButton = new IconButton
         {
-            Size = new Size(32, 32),
+            Size = new Size(36, 36),
             IconImage = (Image?)IconAssets.FolderMini
                         ?? DrawIcons.Make("folder", Color.FromArgb(0x8A, 0x97, 0xB5), 18)
         };
@@ -306,9 +310,9 @@ public class InputField : Panel
     private void Relayout()
     {
         int boxTop = (Height - Box.Height) / 2;
-        Box.SetBounds(16, boxTop, Width - 16 - 44, Box.Height);
-        BrowseButton.SetBounds(Width - 40, (Height - 32) / 2, 32, 32);
-        _placeholder.SetBounds(17, (Height - _placeholder.Height) / 2, Width - 60, _placeholder.Height);
+        Box.SetBounds(16, boxTop, Width - 16 - 52, Box.Height);
+        BrowseButton.SetBounds(Width - 44, (Height - 36) / 2, 36, 36);
+        _placeholder.SetBounds(17, (Height - _placeholder.Height) / 2, Width - 68, _placeholder.Height);
     }
 
     private void UpdatePlaceholder() => _placeholder.Visible = Box.Text.Length == 0 && !_focus;
@@ -412,12 +416,23 @@ public class MascotAvatar : TranslucentControl
     /// <summary>是否在右下角画链接小徽章（标题区头像用）。</summary>
     public bool ShowLinkBadge { get; set; }
 
+    /// <summary>自定义头像图（优先于内嵌吉祥物；图内自带元素时徽章不再叠加）。</summary>
+    public Image? CustomImage { get; set; }
+
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
         int size = Math.Min(Width, Height);
+        var rect = new Rectangle((Width - size) / 2, (Height - size) / 2, size, size);
+
+        if (CustomImage != null)
+        {
+            g.DrawImage(CustomImage, rect);
+            return;
+        }
+
         var img = MascotImage;
         if (img == null)
         {
@@ -425,7 +440,6 @@ public class MascotAvatar : TranslucentControl
             return;
         }
 
-        var rect = new Rectangle((Width - size) / 2, (Height - size) / 2, size, size);
         using (var b = new SolidBrush(Color.White)) g.FillEllipse(b, rect);
         using (var path = new GraphicsPath())
         {
@@ -521,7 +535,7 @@ public static class CatRenderer
 /// <summary>玻璃质感文件夹图标（本地素材，缺失时界面回退到手绘版）。</summary>
 public static class IconAssets
 {
-    private static Image? _src, _dst, _mini;
+    private static Image? _src, _dst, _mini, _sticker, _cat, _gear;
 
     /// <summary>加载内嵌素材并等比缩放到 target 见方（透明留白补齐），失败返回 null。</summary>
     private static Image? Load(string resource, int target)
@@ -558,6 +572,15 @@ public static class IconAssets
 
     /// <summary>输入框浏览按钮的蓝灰文件夹图标。</summary>
     public static Image? FolderMini => _mini ??= Load("CacheMover.assets.folder-mini.png", 48);
+
+    /// <summary>侧边栏底部的云朵气泡+小猫贴纸。</summary>
+    public static Image? CloudSticker => _sticker ??= Load("CacheMover.assets.cloud-sticker.png", 300);
+
+    /// <summary>玻璃蓝圆里的萌系小猫头像（自带链接徽章）。</summary>
+    public static Image? CatAvatar => _cat ??= Load("CacheMover.assets.cat-avatar.png", 160);
+
+    /// <summary>设置导航的蓝灰齿轮图标。</summary>
+    public static Image? Gear => _gear ??= Load("CacheMover.assets.gear.png", 44);
 }
 
 /// <summary>运行时绘制的扁平图标。</summary>
